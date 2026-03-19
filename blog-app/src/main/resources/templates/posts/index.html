@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Blog — All Posts</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="container nav-inner">
+        <a class="brand" th:href="@{/}">📝 BlogApp</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/posts/new}" class="btn btn-primary btn-sm">+ New Post</a>
+        </div>
+    </div>
+</nav>
+
+<main class="container main-content">
+
+    <!-- FLASH MESSAGES -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1>Latest Posts</h1>
+        <p class="subtitle">Explore articles on Spring Boot, Java, and Web Development</p>
+    </div>
+
+    <!-- SEARCH + FILTER TOOLBAR -->
+    <div class="toolbar card">
+        <!-- Search -->
+        <form th:action="@{/}" method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search posts..."
+                   th:value="${search}" class="input-field"/>
+            <input type="hidden" name="limit" th:value="${limit}"/>
+            <button type="submit" class="btn btn-primary">🔍 Search</button>
+            <a th:href="@{/}" class="btn btn-outline" th:if="${search != null}">✕ Clear</a>
+        </form>
+
+        <!-- Filters + Sort -->
+        <form th:action="@{/}" method="get" class="filter-form">
+            <input type="hidden" name="limit" th:value="${limit}"/>
+            <input type="hidden" name="start" value="1"/>
+
+            <input type="text"   name="author"    placeholder="Filter by author..."
+                   th:value="${author}"  class="input-field input-sm"/>
+
+            <select name="tagId" class="input-field input-sm">
+                <option value="">All Tags</option>
+                <option th:each="tag : ${tags}"
+                        th:value="${tag.id}"
+                        th:text="${tag.name}"
+                        th:selected="${tagId == tag.id}"></option>
+            </select>
+
+            <select name="sortField" class="input-field input-sm">
+                <option value="publishedAt" th:selected="${sortField == 'publishedAt'}">Sort: Date</option>
+                <option value="title"       th:selected="${sortField == 'title'}">Sort: Title</option>
+                <option value="author"      th:selected="${sortField == 'author'}">Sort: Author</option>
+            </select>
+
+            <select name="order" class="input-field input-sm">
+                <option value="desc" th:selected="${order == 'desc'}">↓ Descending</option>
+                <option value="asc"  th:selected="${order == 'asc'}">↑ Ascending</option>
+            </select>
+
+            <button type="submit" class="btn btn-outline">Apply</button>
+        </form>
+    </div>
+
+    <!-- ACTIVE SEARCH INFO -->
+    <div th:if="${search != null and !#strings.isEmpty(search)}" class="search-info">
+        Showing results for: <strong th:text="${search}"></strong>
+        — <span th:text="${posts.totalElements}"></span> result(s) found
+    </div>
+
+    <!-- POST LIST -->
+    <div th:if="${posts.content.size() > 0}">
+        <div th:each="post : ${posts.content}" class="post-card card">
+            <div class="post-card-body">
+                <div class="post-meta-top">
+                    <span class="tag-badge" th:each="tag : ${post.tags}" th:text="${tag.name}"></span>
+                </div>
+
+                <h2 class="post-title">
+                    <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}">Post Title</a>
+                </h2>
+
+                <p class="post-excerpt" th:text="${post.excerpt}">Excerpt here...</p>
+
+                <div class="post-meta-bottom">
+                    <span class="meta-item">👤 <span th:text="${post.author}">Author</span></span>
+                    <span class="meta-item">📅 <span th:text="${#temporals.format(post.publishedAt, 'MMM dd, yyyy')}">Date</span></span>
+                    <span class="meta-item">💬 <span th:text="${post.comments.size()}">0</span> comments</span>
+                </div>
+            </div>
+
+            <div class="post-card-actions">
+                <a th:href="@{/posts/{id}(id=${post.id})}"           class="btn btn-primary btn-sm">Read More</a>
+                <a th:href="@{/posts/{id}/edit(id=${post.id})}"       class="btn btn-outline btn-sm">Edit</a>
+                <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
+                      onsubmit="return confirm('Delete this post?')">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div th:if="${posts.content.size() == 0}" class="empty-state card">
+        <p>😕 No posts found.</p>
+        <a th:href="@{/posts/new}" class="btn btn-primary">Create your first post</a>
+    </div>
+
+    <!-- PAGINATION -->
+    <!-- page 1: /?start=1&limit=10  |  page 2: /?start=11&limit=10 -->
+    <div class="pagination" th:if="${posts.totalElements > limit}">
+        <a th:if="${hasPrev}"
+           th:href="@{/(start=${prevStart}, limit=${limit}, sortField=${sortField}, order=${order}, search=${search}, author=${author}, tagId=${tagId})}"
+           class="btn btn-outline">← Previous</a>
+
+        <span class="page-info">
+            Showing <strong th:text="${currentStart}"></strong>–<strong th:text="${currentStart + posts.numberOfElements - 1}"></strong>
+            of <strong th:text="${posts.totalElements}"></strong> posts
+        </span>
+
+        <a th:if="${hasNext}"
+           th:href="@{/(start=${nextStart}, limit=${limit}, sortField=${sortField}, order=${order}, search=${search}, author=${author}, tagId=${tagId})}"
+           class="btn btn-outline">Next →</a>
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2025 BlogApp — Built with Spring Boot &amp; Thymeleaf</p>
+    </div>
+</footer>
+
+</body>
+</html>

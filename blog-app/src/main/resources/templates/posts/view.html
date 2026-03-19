@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${post.title} + ' — BlogApp'">Post — BlogApp</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="container nav-inner">
+        <a class="brand" th:href="@{/}">📝 BlogApp</a>
+        <div class="nav-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/posts/new}" class="btn btn-primary btn-sm">+ New Post</a>
+        </div>
+    </div>
+</nav>
+
+<main class="container main-content">
+
+    <!-- FLASH MESSAGES -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+        <a th:href="@{/}">Home</a> &rsaquo; <span th:text="${post.title}">Post Title</span>
+    </div>
+
+    <!-- POST -->
+    <article class="post-detail card">
+        <header class="post-header">
+            <div class="post-tags">
+                <span class="tag-badge" th:each="tag : ${post.tags}" th:text="${tag.name}"></span>
+            </div>
+            <h1 th:text="${post.title}">Post Title</h1>
+            <div class="post-meta-bottom">
+                <span class="meta-item">👤 <strong th:text="${post.author}">Author</strong></span>
+                <span class="meta-item">📅 <span th:text="${#temporals.format(post.publishedAt, 'MMMM dd, yyyy HH:mm')}">Date</span></span>
+                <span class="meta-item">💬 <span th:text="${comments.size()}">0</span> comments</span>
+            </div>
+        </header>
+
+        <div class="post-content" th:text="${post.content}">
+            Content goes here...
+        </div>
+
+        <footer class="post-footer">
+            <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="btn btn-outline">✏️ Edit Post</a>
+            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
+                  onsubmit="return confirm('Are you sure you want to delete this post?')">
+                <button type="submit" class="btn btn-danger">🗑️ Delete Post</button>
+            </form>
+            <a th:href="@{/}" class="btn btn-outline">← Back to Posts</a>
+        </footer>
+    </article>
+
+    <!-- ─── COMMENTS ─────────────────────────────────────────────────────── -->
+    <section class="comments-section">
+        <h2 class="section-title">💬 Comments (<span th:text="${comments.size()}">0</span>)</h2>
+
+        <!-- Existing Comments -->
+        <div th:if="${comments.size() > 0}">
+            <div th:each="c : ${comments}" class="comment-card card">
+                <div class="comment-header">
+                    <strong th:text="${c.name}">Name</strong>
+                    <span class="comment-email" th:text="${c.email}">email</span>
+                    <span class="comment-date"
+                          th:text="${#temporals.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">date</span>
+                </div>
+                <p class="comment-body" th:text="${c.comment}">Comment text</p>
+                <div class="comment-actions">
+                    <a th:href="@{/posts/{pid}/comments/{cid}/edit(pid=${post.id}, cid=${c.id})}"
+                       class="btn btn-outline btn-xs">Edit</a>
+                    <form th:action="@{/posts/{pid}/comments/{cid}/delete(pid=${post.id}, cid=${c.id})}"
+                          method="post" style="display:inline;"
+                          onsubmit="return confirm('Delete this comment?')">
+                        <button type="submit" class="btn btn-danger btn-xs">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${comments.size() == 0}" class="empty-state">
+            <p>No comments yet. Be the first to comment!</p>
+        </div>
+
+        <!-- Add Comment Form -->
+        <div class="add-comment-form card">
+            <h3>Leave a Comment</h3>
+            <form th:action="@{/posts/{id}/comments(id=${post.id})}" method="post"
+                  th:object="${newComment}">
+
+                <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                    Please fix the errors below.
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" th:field="*{name}"
+                           class="input-field" placeholder="Your name"/>
+                    <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" th:field="*{email}"
+                           class="input-field" placeholder="your@email.com"/>
+                    <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Comment *</label>
+                    <textarea id="comment" th:field="*{comment}"
+                              class="input-field textarea" rows="4"
+                              placeholder="Write your comment here..."></textarea>
+                    <span th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}" class="field-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        </div>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2025 BlogApp — Built with Spring Boot &amp; Thymeleaf</p>
+    </div>
+</footer>
+
+</body>
+</html>
