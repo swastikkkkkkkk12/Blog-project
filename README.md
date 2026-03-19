@@ -15,7 +15,7 @@ Full Stack Blog Application built with Spring Boot, Thymeleaf, and MySQL featuri
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer       | Technology              |
 |-------------|-------------------------|
