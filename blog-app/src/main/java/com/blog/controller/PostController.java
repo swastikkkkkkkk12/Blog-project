@@ -69,9 +69,9 @@ public class PostController {
         return "posts/index";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    
     // VIEW SINGLE POST — GET /posts/{id}
-    // ─────────────────────────────────────────────────────────────────────────
+  
     @GetMapping("/posts/{id}")
     public String viewPost(@PathVariable Long id, Model model) {
         Post post = postService.getPostById(id);
