@@ -25,7 +25,7 @@ public class PostController {
     // Supports: ?start=1&limit=10&sortField=publishedAt&order=desc
     //           ?search=keyword
     //           ?author=name&tagId=1
-    // ─────────────────────────────────────────────────────────────────────────
+   
     @GetMapping("/")
     public String listPosts(
             @RequestParam(defaultValue = "1")      int start,
