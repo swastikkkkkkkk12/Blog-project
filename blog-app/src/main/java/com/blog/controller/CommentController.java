@@ -79,7 +79,7 @@ public class CommentController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DELETE COMMENT — POST /posts/{postId}/comments/{commentId}/delete
+    // DELETE COMMENT IN APP — POST /posts/{postId}/comments/{commentId}/delete
     // ─────────────────────────────────────────────────────────────────────────
     @PostMapping("/posts/{postId}/comments/{commentId}/delete")
     public String deleteComment(
