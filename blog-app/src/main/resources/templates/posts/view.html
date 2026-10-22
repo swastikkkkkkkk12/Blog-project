@@ -48,8 +48,8 @@
         </div>
 
         <footer class="post-footer">
-            <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="btn btn-outline">✏️ Edit Post</a>
-            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
+            <a th:if="${!readOnly}" th:href="@{/posts/{id}/edit(id=${post.id})}" class="btn btn-outline">✏️ Edit Post</a>
+            <form th:if="${!readOnly}" th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
                   onsubmit="return confirm('Are you sure you want to delete this post?')">
                 <button type="submit" class="btn btn-danger">🗑️ Delete Post</button>
             </form>
@@ -71,7 +71,7 @@
                           th:text="${#temporals.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">date</span>
                 </div>
                 <p class="comment-body" th:text="${c.comment}">Comment text</p>
-                <div class="comment-actions">
+                <div class="comment-actions" th:if="${!readOnly}">
                     <a th:href="@{/posts/{pid}/comments/{cid}/edit(pid=${post.id}, cid=${c.id})}"
                        class="btn btn-outline btn-xs">Edit</a>
                     <form th:action="@{/posts/{pid}/comments/{cid}/delete(pid=${post.id}, cid=${c.id})}"
@@ -88,7 +88,7 @@
         </div>
 
         <!-- Add Comment Form -->
-        <div class="add-comment-form card">
+        <div class="add-comment-form card" th:if="${!readOnly}">
             <h3>Leave a Comment</h3>
             <form th:action="@{/posts/{id}/comments(id=${post.id})}" method="post"
                   th:object="${newComment}">
@@ -121,6 +121,9 @@
 
                 <button type="submit" class="btn btn-primary">Post Comment</button>
             </form>
+        </div>
+        <div th:if="${readOnly}" class="alert alert-success">
+            Comments are disabled in this read-only demo.
         </div>
     </section>
 

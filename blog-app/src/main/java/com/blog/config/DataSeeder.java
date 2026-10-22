@@ -7,6 +7,7 @@ import com.blog.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 //commit changes
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class DataSeeder implements CommandLineRunner {
     private final TagRepository  tagRepository;
 
     @Override
+    @Transactional
     public void run(String... args) {
         if (postRepository.count() > 0) return; // already seeded
 

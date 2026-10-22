@@ -14,7 +14,7 @@
         <a class="brand" th:href="@{/}">📝 BlogApp</a>
         <div class="nav-links">
             <a th:href="@{/}">Home</a>
-            <a th:href="@{/posts/new}" class="btn btn-primary btn-sm">+ New Post</a>
+            <a th:if="${!readOnly}" th:href="@{/posts/new}" class="btn btn-primary btn-sm">+ New Post</a>
         </div>
     </div>
 </nav>
@@ -101,8 +101,8 @@
 
             <div class="post-card-actions">
                 <a th:href="@{/posts/{id}(id=${post.id})}"           class="btn btn-primary btn-sm">Read More</a>
-                <a th:href="@{/posts/{id}/edit(id=${post.id})}"       class="btn btn-outline btn-sm">Edit</a>
-                <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
+                <a th:if="${!readOnly}" th:href="@{/posts/{id}/edit(id=${post.id})}" class="btn btn-outline btn-sm">Edit</a>
+                <form th:if="${!readOnly}" th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;"
                       onsubmit="return confirm('Delete this post?')">
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
@@ -113,7 +113,7 @@
     <!-- EMPTY STATE -->
     <div th:if="${posts.content.size() == 0}" class="empty-state card">
         <p>😕 No posts found.</p>
-        <a th:href="@{/posts/new}" class="btn btn-primary">Create your first post</a>
+        <a th:if="${!readOnly}" th:href="@{/posts/new}" class="btn btn-primary">Create your first post</a>
     </div>
 
     <!-- PAGINATION -->

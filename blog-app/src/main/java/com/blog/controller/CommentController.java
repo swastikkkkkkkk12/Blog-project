@@ -1,5 +1,6 @@
 package com.blog.controller;
 
+import com.blog.config.DemoMode;
 import com.blog.entity.Comment;
 import com.blog.entity.Post;
 import com.blog.service.CommentService;
@@ -18,6 +19,7 @@ public class CommentController {
 
     private final CommentService commentService;
     private final PostService    postService;
+    private final DemoMode       demoMode;
 
     // ─────────────────────────────────────────────────────────────────────────
     // ADD COMMENT — POST /posts/{postId}/comments
@@ -30,14 +32,17 @@ public class CommentController {
             RedirectAttributes ra,
             Model model) {
 
+        demoMode.requireWritable();
+
         if (result.hasErrors()) {
-            Post post = postService.getPostById(postId);
+            Post post = postService.getPublishedPostById(postId);
             model.addAttribute("post",     post);
             model.addAttribute("comments", commentService.getCommentsByPostId(postId));
+            model.addAttribute("readOnly", demoMode.isReadOnly());
             return "posts/view";
         }
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.getPublishedPostById(postId);
         commentService.addComment(comment, post);
         ra.addFlashAttribute("successMessage", "Comment added!");
         return "redirect:/posts/" + postId;
@@ -51,7 +56,8 @@ public class CommentController {
             @PathVariable Long postId,
             @PathVariable Long commentId,
             Model model) {
-        model.addAttribute("comment", commentService.getCommentById(commentId));
+        demoMode.requireWritable();
+        model.addAttribute("commentForm", commentService.getCommentByIdAndPostId(postId, commentId));
         model.addAttribute("postId",  postId);
         return "comments/edit";
     }
@@ -63,17 +69,19 @@ public class CommentController {
     public String updateComment(
             @PathVariable Long postId,
             @PathVariable Long commentId,
-            @Valid @ModelAttribute("comment") Comment comment,
+            @Valid @ModelAttribute("commentForm") Comment comment,
             BindingResult result,
             RedirectAttributes ra,
             Model model) {
+
+        demoMode.requireWritable();
 
         if (result.hasErrors()) {
             model.addAttribute("postId", postId);
             return "comments/edit";
         }
 
-        commentService.updateComment(commentId, comment);
+        commentService.updateComment(postId, commentId, comment);
         ra.addFlashAttribute("successMessage", "Comment updated!");
         return "redirect:/posts/" + postId;
     }
@@ -87,7 +95,8 @@ public class CommentController {
             @PathVariable Long commentId,
             RedirectAttributes ra) {
 
-        commentService.deleteComment(commentId);
+        demoMode.requireWritable();
+        commentService.deleteComment(postId, commentId);
         ra.addFlashAttribute("successMessage", "Comment deleted!");
         return "redirect:/posts/" + postId;
     }

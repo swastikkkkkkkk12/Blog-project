@@ -27,9 +27,9 @@
     <div class="form-page card">
         <h1>✏️ Edit Comment</h1>
 
-        <form th:action="@{/posts/{pid}/comments/{cid}/update(pid=${postId}, cid=${comment.id})}"
+            <form th:action="@{/posts/{pid}/comments/{cid}/update(pid=${postId}, cid=${commentForm.id})}"
               method="post"
-              th:object="${comment}">
+                  th:object="${commentForm}">
 
             <div class="form-group">
                 <label>Name *</label>

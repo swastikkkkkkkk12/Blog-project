@@ -6,8 +6,10 @@ import com.blog.repository.PostRepository;
 import com.blog.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +31,20 @@ public class PostService {
                 ? Sort.by(sortField).ascending()
                 : Sort.by(sortField).descending();
         Pageable pageable = PageRequest.of(page, limit, sort);
-        return postRepository.findAll(pageable);
+        return postRepository.findPublished(pageable);
     }
 
     @Transactional(readOnly = true)
     public Post getPostById(Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPublishedPostById(Long id) {
+        return postRepository.findById(id)
+                .filter(Post::isPublished)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
     }
 
     // ─── SEARCH ──────────────────────────────────────────────────────────────
@@ -68,7 +77,7 @@ public class PostService {
         } else if (hasTag) {
             return postRepository.findByTagId(tagId, pageable);
         } else {
-            return postRepository.findAll(pageable);
+            return postRepository.findPublished(pageable);
         }
     }
 
@@ -77,7 +86,6 @@ public class PostService {
     public Post createPost(Post post, String tagsCsv) {
         List<Tag> tags = parseTags(tagsCsv);
         post.setTags(tags);
-        post.setPublished(true);
         return postRepository.save(post);
     }
 
@@ -102,7 +110,7 @@ public class PostService {
     // ─── DELETE ──────────────────────────────────────────────────────────────
 
     public void deletePost(Long id) {
-        postRepository.deleteById(id);
+        postRepository.delete(getPostById(id));
     }
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────

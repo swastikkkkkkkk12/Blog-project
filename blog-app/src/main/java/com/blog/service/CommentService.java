@@ -4,8 +4,10 @@ import com.blog.entity.Comment;
 import com.blog.entity.Post;
 import com.blog.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -24,7 +26,13 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Comment getCommentById(Long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Comment getCommentByIdAndPostId(Long postId, Long commentId) {
+        return commentRepository.findByIdAndPostId(commentId, postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
     }
 
     public Comment addComment(Comment comment, Post post) {
@@ -32,15 +40,15 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public Comment updateComment(Long id, Comment updatedComment) {
-        Comment existing = getCommentById(id);
+    public Comment updateComment(Long postId, Long id, Comment updatedComment) {
+        Comment existing = getCommentByIdAndPostId(postId, id);
         existing.setName(updatedComment.getName());
         existing.setEmail(updatedComment.getEmail());
         existing.setComment(updatedComment.getComment());
         return commentRepository.save(existing);
     }
 
-    public void deleteComment(Long id) {
-        commentRepository.deleteById(id);
+    public void deleteComment(Long postId, Long id) {
+        commentRepository.delete(getCommentByIdAndPostId(postId, id));
     }
 }

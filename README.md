@@ -1,134 +1,83 @@
-# Blog-project
-Full Stack Blog Application built with Spring Boot, Thymeleaf, and MySQL featuring CRUD operations, pagination, search, filtering, sorting, and role-based authentication using Spring Security.
+# Blog Project
 
----
+A server-rendered blog application built with Java 17, Spring Boot, Spring MVC, Thymeleaf, Spring Data JPA, and MySQL. It supports published post browsing, search, author/tag filters, sorting, pagination, and comments.
 
-##  Features
+## Features
 
-- 1. Full CRUD for Posts and Comments
-- 2. Pagination (`?start=1&limit=10`)
-- 3. Full-text Search across title, content, author, tags
-- 4. Filter by author and/or tag
-- 5. Sort by date, title, or author
-- 6. Tag system with reusable tags (Many-to-Many)
-- 7. Auto-seeded sample data on startup
+- Browse and read published posts
+- Search titles, content, excerpts, authors, and tags
+- Filter by author and tag; sort and paginate results
+- Create and edit posts, manage tags, and add/edit/delete comments in local development
+- Optional read-only mode for a public demo
+- Sample content seeded when the database is empty
 
----
+The project does not implement Spring Security or user accounts. Set `APP_DEMO_READ_ONLY=true` for a public demo: write routes are rejected on the server and editing controls are hidden. Keep the demo read-only until proper authentication and authorization are added.
 
-##  Tech Stack
+## Technology
 
-| Layer       | Technology              |
-|-------------|-------------------------|
-| Framework   | Spring Boot 3.2         |
-| MVC         | Spring MVC              |
-| Database    | Spring Data JPA + MySQL |
-| Templates   | Thymeleaf               |
-| Build Tool  | Maven                   |
-| Java        | Java 17                 |
+| Area | Technology |
+|---|---|
+| Language | Java 17 |
+| Web | Spring Boot, Spring MVC, Thymeleaf |
+| Persistence | Spring Data JPA / Hibernate |
+| Local database | MySQL 8 |
+| Hosted demo database | PostgreSQL |
+| Build and tests | Maven, JUnit, MockMvc, H2 |
+| Packaging | Docker and Docker Compose |
 
----
+## Run locally with Maven
 
-##  Setup Instructions
+Requirements: JDK 17, Maven 3.8+, and a local MySQL server.
 
-### 1. Prerequisites
-- Java 17+
-- Maven
-- MySQL running locally
+The default database is `blogdb` on localhost. Set credentials in your shell rather than editing the tracked configuration:
 
-### 2. Create the Database
-```sql
-CREATE DATABASE blogdb;
-```
-
-### 3. Configure application.properties
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/blogdb
-spring.datasource.username=root
-spring.datasource.password=yourpassword
-```
-
-### 4. Run the Application
 ```bash
+export DATABASE_USERNAME=root
+export DATABASE_PASSWORD=your-local-mysql-password
+cd blog-app
+mvn test
 mvn spring-boot:run
 ```
 
-### 5. Open in Browser
-```
-http://localhost:8080
-```
+Open <http://localhost:8080>. To run in read-only mode, set `APP_DEMO_READ_ONLY=true` before starting the app.
 
----
+## Run with Docker Compose
 
-##  Project Structure
+From the repository root:
 
-```
-src/main/java/com/blog/
-├── BlogApplication.java
-├── config/
-│   └── DataSeeder.java         ← Seeds sample data on startup
-├── entity/
-│   ├── Post.java
-│   ├── Tag.java
-│   └── Comment.java
-├── repository/
-│   ├── PostRepository.java
-│   ├── TagRepository.java
-│   └── CommentRepository.java
-├── service/
-│   ├── PostService.java
-│   └── CommentService.java
-└── controller/
-    ├── PostController.java
-    └── CommentController.java
-
-src/main/resources/
-├── templates/
-│   ├── posts/
-│   │   ├── index.html          ← Blog list with search/filter/sort/pagination
-│   │   ├── view.html           ← Single post + comments
-│   │   └── form.html           ← Create / Edit post
-│   └── comments/
-│       └── edit.html           ← Edit comment
-├── static/css/
-│   └── style.css
-└── application.properties
+```bash
+cp .env.example .env
+# Change the two local-only passwords in .env.
+docker compose up --build
 ```
 
----
+Open <http://localhost:8080>. Compose keeps MySQL data in the named `blog-db-data` volume across container restarts. `docker compose down` stops the services; it does not remove that volume. Local passwords in `.env.example` are examples only and must never be reused in a hosted environment.
 
-##  URL Reference
+## Configuration
 
-| URL | Method | Description |
-|-----|--------|-------------|
-| `/` | GET | List all posts |
-| `/?search=java` | GET | Search posts |
-| `/?author=Alice&tagId=1` | GET | Filter posts |
-| `/?sortField=title&order=asc` | GET | Sort posts |
-| `/?start=11&limit=10` | GET | Page 2 |
-| `/posts/{id}` | GET | View single post |
-| `/posts/new` | GET | New post form |
-| `/posts` | POST | Create post |
-| `/posts/{id}/edit` | GET | Edit post form |
-| `/posts/{id}/update` | POST | Update post |
-| `/posts/{id}/delete` | POST | Delete post |
-| `/posts/{id}/comments` | POST | Add comment |
-| `/posts/{postId}/comments/{id}/edit` | GET | Edit comment form |
-| `/posts/{postId}/comments/{id}/update` | POST | Update comment |
-| `/posts/{postId}/comments/{id}/delete` | POST | Delete comment |
+| Variable | Purpose | Local fallback |
+|---|---|---|
+| `DATABASE_URL` | JDBC connection string | Local MySQL URL |
+| `DATABASE_USERNAME` | Database user | `root` |
+| `DATABASE_PASSWORD` | Database password | Empty |
+| `PORT` | HTTP port | `8080` |
+| `APP_DEMO_READ_ONLY` | Blocks all write routes and hides edit controls | `false` |
+| `DDL_AUTO` | Hibernate schema handling | `update` |
+| `SHOW_SQL` | SQL logging | `false` |
 
----
+Hosted credentials belong in the hosting provider's secret settings. Never commit a real database password or connection string containing credentials.
 
-##  Database Schema
+## Tests
 
-```
-posts       ←→ post_tags ←→ tags
-posts        →  comments
+The integration tests use an in-memory H2 database and cover request validation, missing records, sample-data seeding, published/draft visibility, comment/post ownership, and read-only demo behavior.
+
+```bash
+cd blog-app
+mvn test
 ```
 
----
+## Deployment
 
-##  Roadmap
+The repository includes a Dockerfile, a Render Blueprint, and deployment notes. The proposed public demo uses Render's free web service with Neon PostgreSQL; the free web service can sleep when idle, so the first visit may be slow. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and set `APP_DEMO_READ_ONLY=true` in the hosted environment.
 
-- [ ] Part 2: Spring Security (Authentication + Author/Admin roles)
-- [ ] Part 3: Deploy on AWS EC2 / Heroku
-- [ ] Part 4: REST APIs with JSON responses
+The free-tier limits and current deployment status are documented separately. No live URL is claimed until it has been deployed and smoke-tested.

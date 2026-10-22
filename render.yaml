@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: blog-project-demo
+    runtime: docker
+    plan: free
+    branch: codex/phase2-request-validation-404
+    dockerfilePath: ./blog-app/Dockerfile
+    dockerContext: ./blog-app
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: APP_DEMO_READ_ONLY
+        value: "true"
